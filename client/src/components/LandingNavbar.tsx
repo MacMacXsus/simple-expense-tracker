@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-export default function Navbar() {
+export default function LandingNavbar() {
   return (
     <>
       <nav className="bg-white shadow-sm mb-6">

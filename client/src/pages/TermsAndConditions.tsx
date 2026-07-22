@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-export default function Landing() {
+export default function PrivacyPolicy() {
   return (
     <main className="min-h-[calc(100vh-4rem)] flex flex-col justify-center items-center px-4 py-16 text-center">
       <div className="max-w-3xl space-y-6">
@@ -8,30 +8,17 @@ export default function Landing() {
           Simple & Fast
         </span>
         <h1 className="text-4xl font-extrabold text-slate-900 sm:text-5xl">
-          Take control of your personal finances effortlessly
+          Terms & Conditions
         </h1>
         <p className="text-lg text-slate-600 max-w-xl mx-auto">
-          Log daily expenses, track budgets, and see where your money goes in
-          seconds.
+          Log daily expenses, track budgets, and see where your money goes in seconds.
         </p>
-        <div className="pt-2 flex gap-4 justify-center">
+        <div className="pt-2">
           <Link
             to="/dashboard"
             className="inline-block rounded-lg bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-md hover:bg-blue-700 transition-colors"
           >
             Go to Dashboard &rarr;
-          </Link>
-          <Link
-            to="/privacy-policy"
-            className="inline-block rounded-lg bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-md hover:bg-blue-700 transition-colors"
-          >
-            Go to Privacy Policy &rarr;
-          </Link>
-          <Link
-            to="/terms-and-conditions"
-            className="inline-block rounded-lg bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-md hover:bg-blue-700 transition-colors"
-          >
-            Go to Terms and Conditions &rarr;
           </Link>
         </div>
       </div>
@@ -54,8 +41,7 @@ export default function Landing() {
           </div>
           <h3 className="font-bold text-slate-800 text-lg">Categorization</h3>
           <p className="text-sm text-slate-600 mt-2">
-            Organize spent funds into Food, Utilities, Shopping, and custom
-            tags.
+            Organize spent funds into Food, Utilities, Shopping, and custom tags.
           </p>
         </div>
 
@@ -65,8 +51,7 @@ export default function Landing() {
           </div>
           <h3 className="font-bold text-slate-800 text-lg">Clear Overview</h3>
           <p className="text-sm text-slate-600 mt-2">
-            Keep an eye on total spending and remaining monthly budget at a
-            glance.
+            Keep an eye on total spending and remaining monthly budget at a glance.
           </p>
         </div>
       </div>
