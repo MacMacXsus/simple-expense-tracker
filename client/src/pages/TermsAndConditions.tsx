@@ -1,60 +1,99 @@
-import { Link } from "react-router-dom";
+import React from "react";
+import LandingNavbar from "../components/LandingNavbar";
 
-export default function PrivacyPolicy() {
+export default function TermsAndConditions() {
   return (
-    <main className="min-h-[calc(100vh-4rem)] flex flex-col justify-center items-center px-4 py-16 text-center">
-      <div className="max-w-3xl space-y-6">
-        <span className="inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
-          Simple & Fast
-        </span>
-        <h1 className="text-4xl font-extrabold text-slate-900 sm:text-5xl">
-          Terms & Conditions
-        </h1>
-        <p className="text-lg text-slate-600 max-w-xl mx-auto">
-          Log daily expenses, track budgets, and see where your money goes in seconds.
-        </p>
-        <div className="pt-2">
-          <Link
-            to="/dashboard"
-            className="inline-block rounded-lg bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-md hover:bg-blue-700 transition-colors"
-          >
-            Go to Dashboard &rarr;
-          </Link>
-        </div>
-      </div>
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans">
+      {/* Shared Navigation Header */}
+      <LandingNavbar />
 
-      {/* Feature Cards */}
-      <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl text-left w-full">
-        <div className="p-6 bg-white rounded-xl shadow-sm border border-slate-200">
-          <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 font-bold mb-4">
-            ⚡
-          </div>
-          <h3 className="font-bold text-slate-800 text-lg">Fast Logging</h3>
-          <p className="text-sm text-slate-600 mt-2">
-            Record expenses in seconds without wading through confusing menus.
+      {/* Main Terms & Conditions Container */}
+      <main className="max-w-4xl mx-auto px-6 py-12 md:py-16">
+        <div className="bg-white rounded-2xl p-8 md:p-12 shadow-sm border border-slate-200/80">
+          <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight mb-2">
+            Terms &amp; Conditions
+          </h1>
+          <p className="text-sm text-slate-500 mb-8">
+            Last updated: July 2026
           </p>
-        </div>
 
-        <div className="p-6 bg-white rounded-xl shadow-sm border border-slate-200">
-          <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold mb-4">
-            🏷️
-          </div>
-          <h3 className="font-bold text-slate-800 text-lg">Categorization</h3>
-          <p className="text-sm text-slate-600 mt-2">
-            Organize spent funds into Food, Utilities, Shopping, and custom tags.
-          </p>
-        </div>
+          <div className="space-y-8 text-slate-600 leading-relaxed text-sm md:text-base">
+            <section>
+              <h2 className="text-xl font-bold text-slate-900 mb-3">
+                1. Acceptance of Terms
+              </h2>
+              <p>
+                By accessing or using <strong>Trackily</strong>, you agree to be bound by these Terms &amp; Conditions. If you do not agree to all of these terms, please do not access or use our services.
+              </p>
+            </section>
 
-        <div className="p-6 bg-white rounded-xl shadow-sm border border-slate-200">
-          <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600 font-bold mb-4">
-            📊
+            <section>
+              <h2 className="text-xl font-bold text-slate-900 mb-3">
+                2. Description of Service
+              </h2>
+              <p>
+                Trackily provides personal finance and expense tracking management tools. We reserve the right to update, modify, or discontinue any feature of the service at any time to improve system stability or user experience.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-bold text-slate-900 mb-3">
+                3. User Accounts &amp; Security
+              </h2>
+              <p className="mb-3">
+                When you create an account with us, you must provide accurate and complete information:
+              </p>
+              <ul className="list-disc pl-5 space-y-2">
+                <li>You are responsible for maintaining the confidentiality of your account password.</li>
+                <li>You are responsible for all activities that occur under your account.</li>
+                <li>You must notify us immediately upon becoming aware of any breach of security or unauthorized use of your account.</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-bold text-slate-900 mb-3">
+                4. Acceptable Use
+              </h2>
+              <p>
+                You agree not to use Trackily for any unlawful purpose or to attempt to breach, disrupt, or interfere with our servers, network security, or user data interfaces.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-bold text-slate-900 mb-3">
+                5. Intellectual Property
+              </h2>
+              <p>
+                All original content, features, logos, and functionality within Trackily remain the exclusive property of Trackily and its licensors. You may not reproduce or distribute any part of the software without explicit written permission.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-bold text-slate-900 mb-3">
+                6. Limitation of Liability
+              </h2>
+              <p>
+                Trackily is provided on an "AS IS" and "AS AVAILABLE" basis. While we strive for accuracy and reliability, Trackily is an informational expense tracking tool and does not constitute formal financial, accounting, or tax advice.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-bold text-slate-900 mb-3">
+                7. Contact Us
+              </h2>
+              <p>
+                If you have questions regarding these Terms &amp; Conditions, please reach out to us at{" "}
+                <a
+                  href="mailto:support@trackily.com"
+                  className="text-blue-600 hover:underline font-medium"
+                >
+                  support@trackily.com
+                </a>.
+              </p>
+            </section>
           </div>
-          <h3 className="font-bold text-slate-800 text-lg">Clear Overview</h3>
-          <p className="text-sm text-slate-600 mt-2">
-            Keep an eye on total spending and remaining monthly budget at a glance.
-          </p>
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }

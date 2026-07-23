@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import { useState } from "react";
-import LandingNavbar from "./components/LandingNavbar";
 import DashboardNavbar from "./components/DashboardNavbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
@@ -17,13 +16,11 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public Pages Shell (Shares LandingNavbar) */}
+        {/* Public Pages Shell */}
         <Route
           element={
             <div className="min-h-screen bg-white">
-              <LandingNavbar />
-              <Outlet />{" "}
-              {/* Renders <Landing />, <PrivacyPolicy />, or <Terms /> */}
+              <Outlet />
             </div>
           }
         >
@@ -32,13 +29,18 @@ function App() {
           <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
         </Route>
 
-        {/* Shared Protected App Shell (Dashboard + Expenses) */}
+        {/* Shared Protected App Shell (Fixed Left Sidebar Layout) */}
         <Route
           element={
             <ProtectedRoute isAuthenticated={isAuthenticated}>
-              <div className="h-screen">
+              <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
+                {/* Fixed Left Sidebar Navbar */}
                 <DashboardNavbar />
-                <Outlet /> {/* Renders <Dashboard /> or <Expenses /> */}
+
+                {/* Main Dashboard Content View */}
+                <main className="flex-1 overflow-y-auto">
+                  <Outlet />
+                </main>
               </div>
             </ProtectedRoute>
           }
