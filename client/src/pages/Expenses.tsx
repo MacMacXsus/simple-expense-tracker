@@ -1,22 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { SubmitEventHandler } from "react";
 
 interface Expense {
-  id: string;
+  id: number | string;
   title: string;
   amount: number;
   category: string;
-  date: string;
+  created_at?: string;
+  date?: string;
 }
 
-const INITIAL_EXPENSES: Expense[] = [
-  { id: "1", title: "Grocery Shopping", amount: 84.20, category: "Food", date: "2026-07-21" },
-  { id: "2", title: "Internet Bill", amount: 60.00, category: "Utilities", date: "2026-07-19" },
-  { id: "3", title: "Coffee Shop", amount: 12.50, category: "Dining", date: "2026-07-17" },
-];
+const API_URL = "http://localhost:5000/api/expenses";
+
+// const INITIAL_EXPENSES: Expense[] = [
+//   { id: "1", title: "Grocery Shopping", amount: 84.20, category: "Food", date: "2026-07-21" },
+//   { id: "2", title: "Internet Bill", amount: 60.00, category: "Utilities", date: "2026-07-19" },
+//   { id: "3", title: "Coffee Shop", amount: 12.50, category: "Dining", date: "2026-07-17" },
+// ];
 
 export default function Expenses() {
-  const [expenses, setExpenses] = useState<Expense[]>(INITIAL_EXPENSES);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
 
   // Form State
@@ -25,29 +30,74 @@ export default function Expenses() {
   const [category, setCategory] = useState("Food");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
 
-  // Plain function — no event types needed!
-  const handleSubmit = () => {
+  // 1. Fetch expenses on component mount
+  const fetchExpenses = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await fetch(API_URL);
+      if (!res.ok) throw new Error("Failed to load expenses");
+      const data = await res.json();
+      setExpenses(data);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchExpenses();
+  }, []);
+
+// 2. Submit new expense to MySQL backend
+  const handleSubmit = async () => {
     if (!title || !amount) return;
 
-    const newExpense: Expense = {
-      id: Date.now().toString(),
-      title,
-      amount: parseFloat(amount),
-      category,
-      date,
-    };
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          amount: parseFloat(amount),
+          category,
+        }),
+      });
 
-    setExpenses([newExpense, ...expenses]);
-    setTitle("");
-    setAmount("");
-    setShowForm(false);
+      if (!res.ok) throw new Error("Failed to save expense");
+
+      const newExpense: Expense = await res.json();
+
+      // Prepend newly created item to state
+      setExpenses([newExpense, ...expenses]);
+
+      // Reset form controls
+      setTitle("");
+      setAmount("");
+      setShowForm(false);
+    } catch (err) {
+      alert((err as Error).message);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    setExpenses(expenses.filter((item) => item.id !== id));
+  // 3. Delete expense from MySQL backend
+  const handleDelete = async (id: number | string) => {
+    try {
+      const res = await fetch(`${API_URL}/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) throw new Error("Failed to delete expense");
+
+      // Update state after deletion
+      setExpenses(expenses.filter((item) => item.id !== id));
+    } catch (err) {
+      alert((err as Error).message);
+    }
   };
 
-  return (
+return (
     <main className="mx-auto max-w-5xl px-4 py-8 space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -149,7 +199,11 @@ export default function Expenses() {
 
       {/* Expense List Table */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        {expenses.length === 0 ? (
+        {loading ? (
+          <div className="p-8 text-center text-slate-500">Loading expenses...</div>
+        ) : error ? (
+          <div className="p-8 text-center text-red-500">{error}</div>
+        ) : expenses.length === 0 ? (
           <div className="p-8 text-center text-slate-500">
             No expenses recorded yet. Click "+ Add Expense" above to add one!
           </div>
@@ -176,9 +230,13 @@ export default function Expenses() {
                         {expense.category}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-slate-500">{expense.date}</td>
+                    <td className="px-6 py-4 text-slate-500">
+                      {expense.created_at
+                        ? new Date(expense.created_at).toLocaleDateString()
+                        : expense.date || "N/A"}
+                    </td>
                     <td className="px-6 py-4 font-bold text-slate-900">
-                      -${expense.amount.toFixed(2)}
+                      -${Number(expense.amount).toFixed(2)}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button
