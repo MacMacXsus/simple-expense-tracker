@@ -1,4 +1,4 @@
-import { db } from '../lib/db.js';
+import { db } from '../lib/db';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
 
 export interface Expense {
