@@ -1,55 +1,70 @@
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
-import React, { useState } from "react";
 import DashboardNavbar from "./components/DashboardNavbar";
 import ProtectedRoute from "./components/ProtectedRoute";
+import PublicOnlyRoute from "./components/PublicOnlyRoute";
 import Dashboard from "./pages/Dashboard";
 import Expenses from "./pages/Expenses";
 import Landing from "./pages/Landing";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import { AuthProvider } from "./context/AuthContext";
 import "./App.css";
 
 function App() {
-  // Temporary auth state (for now)
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
-
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Public Pages Shell */}
-        <Route
-          element={
-            <div className="min-h-screen bg-white">
-              <Outlet />
-            </div>
-          }
-        >
-          <Route path="/" element={<Landing />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
-        </Route>
-
-        {/* Shared Protected App Shell (Fixed Left Sidebar Layout) */}
-        <Route
-          element={
-            <ProtectedRoute isAuthenticated={isAuthenticated}>
-              <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
-                {/* Fixed Left Sidebar Navbar */}
-                <DashboardNavbar />
-
-                {/* Main Dashboard Content View */}
-                <main className="flex-1 overflow-y-auto">
-                  <Outlet />
-                </main>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Public Pages Shell */}
+          <Route
+            element={
+              <div className="min-h-screen bg-white">
+                <Outlet />
               </div>
-            </ProtectedRoute>
-          }
-        >
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/expenses" element={<Expenses />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+            }
+          >
+            <Route path="/" element={<Landing />} />
+            <Route
+              path="/login"
+              element={
+                <PublicOnlyRoute>
+                  <Login />
+                </PublicOnlyRoute>
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <PublicOnlyRoute>
+                  <Register />
+                </PublicOnlyRoute>
+              }
+            />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+          </Route>
+
+          {/* Shared Protected App Shell */}
+          <Route
+            element={
+              <ProtectedRoute>
+                <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
+                  <DashboardNavbar />
+                  <main className="flex-1 overflow-y-auto">
+                    <Outlet />
+                  </main>
+                </div>
+              </ProtectedRoute>
+            }
+          >
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/expenses" element={<Expenses />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 

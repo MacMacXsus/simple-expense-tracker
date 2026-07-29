@@ -1,12 +1,14 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function Dashboard() {
+  const { user } = useAuth();
   return (
     <main className="mx-auto max-w-5xl px-4 py-8 space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Welcome Back</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Welcome Back, {user?.name || "User"}</h1>
           <p className="text-sm text-slate-500">
             Here is a summary of your financial activity this month.
           </p>

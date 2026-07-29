@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
+import authRoutes from './routes/authRoutes';
 import expenseRoutes from './routes/expense.routes.js';
 import { db } from './lib/db';
 
@@ -14,6 +16,9 @@ app.use(cors({
   credentials: true,
 }));
 app.use(express.json());
+app.use(cookieParser());
+
+app.use('/api/auth', authRoutes); // Mount auth routes
 
 // Mount API routes
 app.use('/api/expenses', expenseRoutes);
