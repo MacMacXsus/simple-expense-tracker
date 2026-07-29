@@ -10,7 +10,7 @@ import TermsAndConditions from "./pages/TermsAndConditions";
 import "./App.css";
 
 function App() {
-  // Temporary auth state
+  // Temporary auth state (for now)
   const [isAuthenticated, setIsAuthenticated] = useState(true);
 
   return (
