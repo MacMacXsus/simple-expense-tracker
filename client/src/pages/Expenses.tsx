@@ -18,11 +18,24 @@ export default function Expenses() {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
 
+  // Search & Debounce State
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+
   // Form State
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("Food");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+
+  // Debounce Effect: Waits 300ms after the user stops typing to update filter
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
 
   // 1. Fetch expenses for logged-in user
   const fetchExpenses = async () => {
@@ -51,6 +64,20 @@ export default function Expenses() {
     fetchExpenses();
   }, []);
 
+  // Helper function to format date strings cleanly
+  const formatDateDisplay = (expense: Expense) => {
+    if (expense.date) {
+      // Append time portion to force local midnight parsing
+      const d = new Date(expense.date.includes("T") ? expense.date : `${expense.date}T00:00:00`);
+      return isNaN(d.getTime()) ? expense.date : d.toLocaleDateString();
+    }
+    if (expense.created_at) {
+      const d = new Date(expense.created_at);
+      return isNaN(d.getTime()) ? expense.created_at : d.toLocaleDateString();
+    }
+    return "N/A";
+  };
+
   // 2. Submit new expense for logged-in user
   const handleSubmit = async () => {
     if (!title || !amount) return;
@@ -64,6 +91,7 @@ export default function Expenses() {
           title,
           amount: parseFloat(amount),
           category,
+          date, // <-- Included selected date in payload
         }),
       });
 
@@ -77,6 +105,7 @@ export default function Expenses() {
       // Reset form controls
       setTitle("");
       setAmount("");
+      setDate(new Date().toISOString().split("T")[0]);
       setShowForm(false);
     } catch (err) {
       alert((err as Error).message);
@@ -99,6 +128,17 @@ export default function Expenses() {
       alert((err as Error).message);
     }
   };
+
+  // Filter expenses using the debounced search term
+  const filteredExpenses = expenses.filter((expense) => {
+    const query = debouncedSearchTerm.toLowerCase().trim();
+    if (!query) return true;
+
+    const titleMatch = expense.title.toLowerCase().includes(query);
+    const categoryMatch = expense.category.toLowerCase().includes(query);
+
+    return titleMatch || categoryMatch;
+  });
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8 space-y-8">
@@ -200,15 +240,43 @@ export default function Expenses() {
         </form>
       )}
 
+      {/* Search Input Toolbar */}
+      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search expenses by title or category..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full rounded-lg border border-slate-300 pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <svg
+            className="w-4 h-4 text-slate-400 absolute left-3 top-3"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+        </div>
+      </div>
+
       {/* Expense List Table */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         {loading ? (
           <div className="p-8 text-center text-slate-500">Loading expenses...</div>
         ) : error ? (
           <div className="p-8 text-center text-red-500">{error}</div>
-        ) : expenses.length === 0 ? (
+        ) : filteredExpenses.length === 0 ? (
           <div className="p-8 text-center text-slate-500">
-            No expenses recorded yet. Click "+ Add Expense" above to add one!
+            {expenses.length === 0
+              ? 'No expenses recorded yet. Click "+ Add Expense" above to add one!'
+              : `No expenses matching "${debouncedSearchTerm}".`}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -223,7 +291,7 @@ export default function Expenses() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {expenses.map((expense) => (
+                {filteredExpenses.map((expense) => (
                   <tr key={expense.id} className="hover:bg-slate-50/50">
                     <td className="px-6 py-4 font-semibold text-slate-800">
                       {expense.title}
@@ -234,9 +302,7 @@ export default function Expenses() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-slate-500">
-                      {expense.created_at
-                        ? new Date(expense.created_at).toLocaleDateString()
-                        : expense.date || "N/A"}
+                      {formatDateDisplay(expense)}
                     </td>
                     <td className="px-6 py-4 font-bold text-slate-900">
                       -${Number(expense.amount).toFixed(2)}

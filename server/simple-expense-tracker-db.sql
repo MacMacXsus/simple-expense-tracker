@@ -23,11 +23,28 @@ CREATE TABLE IF NOT EXISTS expenses (
     title VARCHAR(255) NOT NULL,
     amount DECIMAL(10,2) NOT NULL,
     category VARCHAR(100) NOT NULL,
+    date DATE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     user_id INT NOT NULL,
 
     KEY fk_expenses_users (user_id),
     CONSTRAINT fk_expenses_users
+        FOREIGN KEY (user_id)
+        REFERENCES users (id)
+        ON DELETE CASCADE
+);
+
+
+CREATE TABLE IF NOT EXISTS budgets (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    amount DECIMAL(10,2) NOT NULL DEFAULT 2000.00,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+
+    UNIQUE KEY unique_user_id (user_id),
+    CONSTRAINT fk_budgets_users
         FOREIGN KEY (user_id)
         REFERENCES users (id)
         ON DELETE CASCADE

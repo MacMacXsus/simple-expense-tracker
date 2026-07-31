@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { ExpenseModel } from '../models/expense.model.js';
 
-// Extend Request type to recognize user injected by auth middleware
 interface AuthRequest extends Request {
   user?: {
     id: number;
@@ -58,18 +57,21 @@ export const createExpense = async (req: AuthRequest, res: Response): Promise<vo
     return;
   }
 
-  const { title, amount, category } = req.body;
+  const { title, amount, category, date } = req.body; // <-- Extracted date
 
   if (!title || amount == null || !category) {
     res.status(400).json({ error: 'Title, amount, and category are required' });
     return;
   }
 
+  const expenseDate = date || new Date().toISOString().split('T')[0];
+
   try {
     const newId = await ExpenseModel.create(userId, {
       title,
       amount: Number(amount),
       category,
+      date: expenseDate,
     });
     res.status(201).json({
       id: newId,
@@ -77,6 +79,7 @@ export const createExpense = async (req: AuthRequest, res: Response): Promise<vo
       title,
       amount: Number(amount),
       category,
+      date: expenseDate, // <-- Return date in response
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to create expense' });
@@ -92,7 +95,7 @@ export const updateExpense = async (req: AuthRequest, res: Response): Promise<vo
 
   const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(rawId, 10);
-  const { title, amount, category } = req.body;
+  const { title, amount, category, date } = req.body;
 
   if (isNaN(id)) {
     res.status(400).json({ error: 'Invalid ID format' });
@@ -104,17 +107,20 @@ export const updateExpense = async (req: AuthRequest, res: Response): Promise<vo
     return;
   }
 
+  const expenseDate = date || new Date().toISOString().split('T')[0];
+
   try {
     const updated = await ExpenseModel.update(id, userId, {
       title,
       amount: Number(amount),
       category,
+      date: expenseDate,
     });
     if (!updated) {
       res.status(404).json({ error: 'Expense not found or unauthorized' });
       return;
     }
-    res.json({ id, user_id: userId, title, amount: Number(amount), category });
+    res.json({ id, user_id: userId, title, amount: Number(amount), category, date: expenseDate });
   } catch (error) {
     res.status(500).json({ error: 'Failed to update expense' });
   }

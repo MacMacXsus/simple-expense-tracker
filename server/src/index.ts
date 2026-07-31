@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes';
 import expenseRoutes from './routes/expense.routes.js';
+import budgetRoutes from './routes/budget.routes.js';
 import { db } from './lib/db';
 
 dotenv.config();
@@ -22,6 +23,8 @@ app.use('/api/auth', authRoutes); // Mount auth routes
 
 // Mount API routes
 app.use('/api/expenses', expenseRoutes);
+
+app.use('/api/budget', budgetRoutes);
 
 // Add this route in src/index.ts before app.listen()
 // for testing database connectivity
