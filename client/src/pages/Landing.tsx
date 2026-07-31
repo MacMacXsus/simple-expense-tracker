@@ -12,7 +12,7 @@ export default function Landing() {
         {/* Soft Radial Gradient */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-100/60 via-slate-50/80 to-slate-50" />
 
-        {/* Top-Left Blue Glow (Extends behind the Navbar) */}
+        {/* Top-Left Blue Glow */}
         <div className="absolute -top-24 -left-20 w-96 h-96 bg-blue-400/25 rounded-full blur-3xl" />
 
         {/* Right Ambient Glow */}
@@ -20,20 +20,11 @@ export default function Landing() {
 
         {/* Bottom Ambient Glow */}
         <div className="absolute -bottom-20 left-1/3 w-[500px] h-80 bg-indigo-200/20 rounded-full blur-3xl" />
-
-        {/* Subtle Dot Grid */}
-        {/* <div
-          className="absolute inset-0 opacity-[0.25]"
-          style={{
-            backgroundImage: `radial-gradient(#94a3b8 1px, transparent 1px)`,
-            backgroundSize: "24px 24px",
-          }}
-        /> */}
       </div>
 
       {/* ================= PAGE CONTENT LAYER ================= */}
       <div className="relative z-10 flex flex-col min-h-screen">
-        {/* 1. Header sits directly above hero within same background context */}
+        {/* 1. Header */}
         <LandingNavbar />
 
         {/* 2. Hero Content */}
@@ -54,14 +45,14 @@ export default function Landing() {
             {/* Action Buttons */}
             <div className="flex flex-wrap items-center gap-4 pt-2">
               <button
-                onClick={() => navigate("/dashboard")}
-                className="px-6 py-3.5 text-base font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md transition-all"
+                onClick={() => navigate("/login")}
+                className="px-6 py-3.5 text-base font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md transition-all cursor-pointer"
               >
                 Get Started For Free
               </button>
               <button
                 onClick={() => navigate("/")}
-                className="px-6 py-3.5 text-base font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl shadow-sm transition-all"
+                className="px-6 py-3.5 text-base font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl shadow-sm transition-all cursor-pointer"
               >
                 Watch Demo
               </button>
@@ -116,7 +107,8 @@ export default function Landing() {
             </div>
           </div>
         </main>
-        {/* Footer at the bottom */}
+
+        {/* Footer */}
         <LandingFooter />
       </div>
     </div>
