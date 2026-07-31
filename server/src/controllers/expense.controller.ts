@@ -1,16 +1,36 @@
 import { Request, Response } from 'express';
 import { ExpenseModel } from '../models/expense.model.js';
 
-export const getExpenses = async (req: Request, res: Response): Promise<void> => {
+// Extend Request type to recognize user injected by auth middleware
+interface AuthRequest extends Request {
+  user?: {
+    id: number;
+    email: string;
+  };
+}
+
+export const getExpenses = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const expenses = await ExpenseModel.findAll();
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    const expenses = await ExpenseModel.findAll(userId);
     res.json(expenses);
   } catch (error) {
     res.status(500).json({ error: 'Failed to retrieve expenses' });
   }
 };
 
-export const getExpenseById = async (req: Request, res: Response): Promise<void> => {
+export const getExpenseById = async (req: AuthRequest, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+
   const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(rawId, 10);
 
@@ -20,7 +40,7 @@ export const getExpenseById = async (req: Request, res: Response): Promise<void>
   }
 
   try {
-    const expense = await ExpenseModel.findById(id);
+    const expense = await ExpenseModel.findById(id, userId);
     if (!expense) {
       res.status(404).json({ error: 'Expense not found' });
       return;
@@ -31,7 +51,13 @@ export const getExpenseById = async (req: Request, res: Response): Promise<void>
   }
 };
 
-export const createExpense = async (req: Request, res: Response): Promise<void> => {
+export const createExpense = async (req: AuthRequest, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+
   const { title, amount, category } = req.body;
 
   if (!title || amount == null || !category) {
@@ -40,14 +66,30 @@ export const createExpense = async (req: Request, res: Response): Promise<void> 
   }
 
   try {
-    const newId = await ExpenseModel.create({ title, amount: Number(amount), category });
-    res.status(201).json({ id: newId, title, amount: Number(amount), category });
+    const newId = await ExpenseModel.create(userId, {
+      title,
+      amount: Number(amount),
+      category,
+    });
+    res.status(201).json({
+      id: newId,
+      user_id: userId,
+      title,
+      amount: Number(amount),
+      category,
+    });
   } catch (error) {
     res.status(500).json({ error: 'Failed to create expense' });
   }
 };
 
-export const updateExpense = async (req: Request, res: Response): Promise<void> => {
+export const updateExpense = async (req: AuthRequest, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+
   const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(rawId, 10);
   const { title, amount, category } = req.body;
@@ -63,18 +105,28 @@ export const updateExpense = async (req: Request, res: Response): Promise<void> 
   }
 
   try {
-    const updated = await ExpenseModel.update(id, { title, amount: Number(amount), category });
+    const updated = await ExpenseModel.update(id, userId, {
+      title,
+      amount: Number(amount),
+      category,
+    });
     if (!updated) {
-      res.status(404).json({ error: 'Expense not found' });
+      res.status(404).json({ error: 'Expense not found or unauthorized' });
       return;
     }
-    res.json({ id, title, amount: Number(amount), category });
+    res.json({ id, user_id: userId, title, amount: Number(amount), category });
   } catch (error) {
     res.status(500).json({ error: 'Failed to update expense' });
   }
 };
 
-export const deleteExpense = async (req: Request, res: Response): Promise<void> => {
+export const deleteExpense = async (req: AuthRequest, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+
   const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(rawId, 10);
 
@@ -84,9 +136,9 @@ export const deleteExpense = async (req: Request, res: Response): Promise<void> 
   }
 
   try {
-    const deleted = await ExpenseModel.delete(id);
+    const deleted = await ExpenseModel.delete(id, userId);
     if (!deleted) {
-      res.status(404).json({ error: 'Expense not found' });
+      res.status(404).json({ error: 'Expense not found or unauthorized' });
       return;
     }
     res.json({ message: 'Expense deleted successfully' });

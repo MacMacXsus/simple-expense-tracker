@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import type { SubmitEventHandler } from "react";
 
 interface Expense {
   id: number | string;
+  user_id?: number;
   title: string;
   amount: number;
   category: string;
@@ -11,12 +11,6 @@ interface Expense {
 }
 
 const API_URL = "http://localhost:5000/api/expenses";
-
-// const INITIAL_EXPENSES: Expense[] = [
-//   { id: "1", title: "Grocery Shopping", amount: 84.20, category: "Food", date: "2026-07-21" },
-//   { id: "2", title: "Internet Bill", amount: 60.00, category: "Utilities", date: "2026-07-19" },
-//   { id: "3", title: "Coffee Shop", amount: 12.50, category: "Dining", date: "2026-07-17" },
-// ];
 
 export default function Expenses() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -30,12 +24,19 @@ export default function Expenses() {
   const [category, setCategory] = useState("Food");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
 
-  // 1. Fetch expenses on component mount
+  // 1. Fetch expenses for logged-in user
   const fetchExpenses = async () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch(API_URL);
+      const res = await fetch(API_URL, {
+        credentials: "include", // Pass authentication cookie
+      });
+
+      if (res.status === 401) {
+        throw new Error("Please log in to view your expenses.");
+      }
+
       if (!res.ok) throw new Error("Failed to load expenses");
       const data = await res.json();
       setExpenses(data);
@@ -50,7 +51,7 @@ export default function Expenses() {
     fetchExpenses();
   }, []);
 
-// 2. Submit new expense to MySQL backend
+  // 2. Submit new expense for logged-in user
   const handleSubmit = async () => {
     if (!title || !amount) return;
 
@@ -58,6 +59,7 @@ export default function Expenses() {
       const res = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include", // Pass authentication cookie
         body: JSON.stringify({
           title,
           amount: parseFloat(amount),
@@ -81,11 +83,12 @@ export default function Expenses() {
     }
   };
 
-  // 3. Delete expense from MySQL backend
+  // 3. Delete expense
   const handleDelete = async (id: number | string) => {
     try {
       const res = await fetch(`${API_URL}/${id}`, {
         method: "DELETE",
+        credentials: "include", // Pass authentication cookie
       });
 
       if (!res.ok) throw new Error("Failed to delete expense");
@@ -97,7 +100,7 @@ export default function Expenses() {
     }
   };
 
-return (
+  return (
     <main className="mx-auto max-w-5xl px-4 py-8 space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
