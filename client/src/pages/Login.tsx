@@ -33,12 +33,19 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
       <div className="max-w-md w-full bg-white rounded-xl border border-slate-200 shadow-sm p-8 space-y-6">
-        <button onClick={() => navigate("/")} className="text-blue-600 hover:underline text-sm mb-4">
+        <button
+          onClick={() => navigate("/")}
+          className="text-blue-600 hover:underline text-sm mb-4"
+        >
           &larr; Back to Home
         </button>
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-slate-900">Sign in to your account</h1>
-          <p className="text-sm text-slate-500 mt-1">Welcome back! Please enter your details.</p>
+          <h1 className="text-2xl font-bold text-slate-900">
+            Sign in to your account
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Welcome back! Please enter your details.
+          </p>
         </div>
 
         {error && (
@@ -49,7 +56,9 @@ export default function Login() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Email address</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Email address
+            </label>
             <input
               type="email"
               required
@@ -61,7 +70,9 @@ export default function Login() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Password
+            </label>
             <input
               type="password"
               required
@@ -83,10 +94,24 @@ export default function Login() {
 
         <p className="text-center text-sm text-slate-500">
           Don't have an account?{" "}
-          <Link to="/register" className="font-semibold text-blue-600 hover:underline">
+          <Link
+            to="/register"
+            className="font-semibold text-blue-600 hover:underline"
+          >
             Sign up
           </Link>
         </p>
+        <div className="flex items-center justify-between mb-1">
+          <label className="block text-sm font-medium text-slate-700">
+            Password
+          </label>
+          <Link
+            to="/forgot-password"
+            className="text-xs font-semibold text-blue-600 hover:underline"
+          >
+            Forgot password?
+          </Link>
+        </div>
       </div>
     </div>
   );

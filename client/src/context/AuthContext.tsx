@@ -11,13 +11,20 @@ interface AuthContextType {
   isAuthenticated: boolean;
   loading: boolean;
   login: (credentials: { email: string; password: string }) => Promise<void>;
-  register: (data: { name: string; email: string; password: string }) => Promise<void>;
+  register: (data: {
+    name: string;
+    email: string;
+    password: string;
+  }) => Promise<void>;
+  verifyRegisterOtp: (data: { email: string; otp: string }) => Promise<void>;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -25,7 +32,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch("/api/auth/me", { credentials: "include" });
+        const response = await fetch("/api/auth/me", {
+          credentials: "include",
+        });
         if (response.ok) {
           const data = await response.json();
           setUser(data.user);
@@ -58,7 +67,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(data.user);
   };
 
-  const register = async (formData: { name: string; email: string; password: string }) => {
+  const register = async (formData: {
+    name: string;
+    email: string;
+    password: string;
+  }) => {
     const response = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -70,8 +83,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!response.ok) {
       throw new Error(data.message || "Failed to register");
     }
+  };
 
-    setUser(data.user);
+  const verifyRegisterOtp = async (data: { email: string; otp: string }) => {
+    const response = await fetch("/api/auth/verify-register-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+      credentials: "include",
+    });
+
+    const resData = await response.json();
+    if (!response.ok) {
+      throw new Error(resData.message || "Failed to verify code");
+    }
+
+    setUser(resData.user);
   };
 
   const logout = async () => {
@@ -90,6 +117,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loading,
         login,
         register,
+        verifyRegisterOtp, // <--- Added here
         logout,
       }}
     >
