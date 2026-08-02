@@ -28,7 +28,7 @@ export default function Expenses() {
   const [category, setCategory] = useState("Food");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
 
-  // Debounce Effect: Waits 300ms after the user stops typing to update filter
+  // Debounce Effect: Waits 300ms after the user stops typing
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
@@ -43,7 +43,7 @@ export default function Expenses() {
       setLoading(true);
       setError(null);
       const res = await fetch(API_URL, {
-        credentials: "include", // Pass authentication cookie
+        credentials: "include",
       });
 
       if (res.status === 401) {
@@ -64,18 +64,16 @@ export default function Expenses() {
     fetchExpenses();
   }, []);
 
-  // Helper function to format date strings cleanly
+  // Format date strings to YYYY-MM-DD format as seen in screenshot
   const formatDateDisplay = (expense: Expense) => {
-    if (expense.date) {
-      // Append time portion to force local midnight parsing
-      const d = new Date(expense.date.includes("T") ? expense.date : `${expense.date}T00:00:00`);
-      return isNaN(d.getTime()) ? expense.date : d.toLocaleDateString();
-    }
-    if (expense.created_at) {
-      const d = new Date(expense.created_at);
-      return isNaN(d.getTime()) ? expense.created_at : d.toLocaleDateString();
-    }
-    return "N/A";
+    const raw = expense.date || expense.created_at;
+    if (!raw) return "N/A";
+    const d = new Date(raw.includes("T") ? raw : `${raw}T00:00:00`);
+    if (isNaN(d.getTime())) return raw.substring(0, 10);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
   };
 
   // 2. Submit new expense for logged-in user
@@ -86,12 +84,12 @@ export default function Expenses() {
       const res = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // Pass authentication cookie
+        credentials: "include",
         body: JSON.stringify({
           title,
           amount: parseFloat(amount),
           category,
-          date, // <-- Included selected date in payload
+          date,
         }),
       });
 
@@ -99,7 +97,6 @@ export default function Expenses() {
 
       const newExpense: Expense = await res.json();
 
-      // Prepend newly created item to state
       setExpenses([newExpense, ...expenses]);
 
       // Reset form controls
@@ -117,12 +114,11 @@ export default function Expenses() {
     try {
       const res = await fetch(`${API_URL}/${id}`, {
         method: "DELETE",
-        credentials: "include", // Pass authentication cookie
+        credentials: "include",
       });
 
       if (!res.ok) throw new Error("Failed to delete expense");
 
-      // Update state after deletion
       setExpenses(expenses.filter((item) => item.id !== id));
     } catch (err) {
       alert((err as Error).message);
@@ -140,21 +136,53 @@ export default function Expenses() {
     return titleMatch || categoryMatch;
   });
 
+  // Calculate total amount for the summary row
+  const totalAmount = filteredExpenses.reduce(
+    (sum, exp) => sum + Number(exp.amount),
+    0
+  );
+
+  // Category Color mapping based on design screenshot
+  const getCategoryColor = (catName: string) => {
+    switch (catName.toLowerCase()) {
+      case "food":
+        return "text-blue-600";
+      case "income":
+        return "text-[#16A34A]";
+      case "utilities":
+        return "text-purple-600";
+      case "transport":
+        return "text-amber-600";
+      case "housing":
+        return "text-emerald-700";
+      case "subscriptions":
+      case "dining":
+        return "text-pink-600";
+      case "health":
+      case "shopping":
+        return "text-rose-600";
+      default:
+        return "text-slate-600";
+    }
+  };
+
   return (
-    <main className="mx-auto max-w-5xl px-4 py-8 space-y-8">
+    <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 font-sans text-slate-800">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Expenses</h1>
-          <p className="text-sm text-slate-500">
-            Manage, filter, and track all your logged expenses.
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+            Expenses
+          </h1>
+          <p className="text-xs text-slate-500 mt-0.5">
+            {expenses.length} transactions
           </p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors"
+          className="inline-flex items-center justify-center rounded-lg bg-[#1B5E20] hover:bg-[#144718] px-4 py-2 text-xs font-semibold text-white shadow-sm transition-colors cursor-pointer"
         >
-          {showForm ? "Cancel" : "+ Add Expense"}
+          {showForm ? "Cancel" : "+ Add expense"}
         </button>
       </div>
 
@@ -165,9 +193,9 @@ export default function Expenses() {
             e.preventDefault();
             handleSubmit();
           }}
-          className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4"
+          className="bg-white p-6 rounded-xl border border-slate-200/80 shadow-sm space-y-4"
         >
-          <h2 className="text-lg font-bold text-slate-800">Add New Expense</h2>
+          <h2 className="text-sm font-bold text-slate-900">Add New Expense</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-600 mb-1">
@@ -175,10 +203,10 @@ export default function Expenses() {
               </label>
               <input
                 type="text"
-                placeholder="e.g. Weekly Groceries"
+                placeholder="e.g. Whole Foods Market"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#1B5E20]"
                 required
               />
             </div>
@@ -193,7 +221,7 @@ export default function Expenses() {
                 placeholder="0.00"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#1B5E20]"
                 required
               />
             </div>
@@ -205,7 +233,7 @@ export default function Expenses() {
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#1B5E20] bg-white"
               >
                 <option value="Food">Food</option>
                 <option value="Utilities">Utilities</option>
@@ -223,7 +251,7 @@ export default function Expenses() {
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#1B5E20]"
                 required
               />
             </div>
@@ -232,7 +260,7 @@ export default function Expenses() {
           <div className="flex justify-end pt-2">
             <button
               type="submit"
-              className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors"
+              className="rounded-lg bg-[#1B5E20] hover:bg-[#144718] px-5 py-2 text-xs font-semibold text-white shadow-sm transition-colors cursor-pointer"
             >
               Save Expense
             </button>
@@ -240,18 +268,18 @@ export default function Expenses() {
         </form>
       )}
 
-      {/* Search Input Toolbar */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-        <div className="relative">
+      {/* Search & Filter Toolbar */}
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
           <input
             type="text"
-            placeholder="Search expenses by title or category..."
+            placeholder="Search transactions..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border border-slate-200/80 bg-white pl-9 pr-4 py-2 text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1B5E20] shadow-sm"
           />
           <svg
-            className="w-4 h-4 text-slate-400 absolute left-3 top-3"
+            className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -264,53 +292,87 @@ export default function Expenses() {
             />
           </svg>
         </div>
+
+        <button className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200/80 bg-white text-xs font-medium text-slate-600 hover:bg-slate-50 shadow-sm cursor-pointer">
+          <svg
+            className="w-3.5 h-3.5 text-slate-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+            />
+          </svg>
+          <span>Filter</span>
+          <span className="text-[10px]">▼</span>
+        </button>
       </div>
 
-      {/* Expense List Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      {/* Expense List Table Card */}
+      <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-slate-500">Loading expenses...</div>
+          <div className="p-12 text-center text-xs text-slate-400">
+            Loading expenses...
+          </div>
         ) : error ? (
-          <div className="p-8 text-center text-red-500">{error}</div>
+          <div className="p-12 text-center text-xs text-rose-500">{error}</div>
         ) : filteredExpenses.length === 0 ? (
-          <div className="p-8 text-center text-slate-500">
+          <div className="p-12 text-center text-xs text-slate-400">
             {expenses.length === 0
-              ? 'No expenses recorded yet. Click "+ Add Expense" above to add one!'
+              ? 'No expenses recorded yet. Click "+ Add expense" above to add one!'
               : `No expenses matching "${debouncedSearchTerm}".`}
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-600">
-              <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+            <table className="w-full text-left text-xs text-slate-600">
+              <thead className="bg-slate-50/50 text-[11px] font-semibold text-slate-500 border-b border-slate-200/80">
                 <tr>
-                  <th className="px-6 py-3">Expense</th>
-                  <th className="px-6 py-3">Category</th>
-                  <th className="px-6 py-3">Date</th>
-                  <th className="px-6 py-3">Amount</th>
-                  <th className="px-6 py-3 text-right">Actions</th>
+                  <th className="px-6 py-3 font-medium">Date</th>
+                  <th className="px-6 py-3 font-medium">Description</th>
+                  <th className="px-6 py-3 font-medium">Category</th>
+                  <th className="px-6 py-3 font-medium">Status</th>
+                  <th className="px-6 py-3 font-medium text-right">Amount</th>
+                  <th className="px-6 py-3 font-medium text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredExpenses.map((expense) => (
-                  <tr key={expense.id} className="hover:bg-slate-50/50">
-                    <td className="px-6 py-4 font-semibold text-slate-800">
+                  <tr
+                    key={expense.id}
+                    className="hover:bg-slate-50/60 transition-colors group"
+                  >
+                    <td className="px-6 py-3.5 font-mono text-slate-500 whitespace-nowrap">
+                      {formatDateDisplay(expense)}
+                    </td>
+                    <td className="px-6 py-3.5 font-bold text-slate-900">
                       {expense.title}
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="inline-block rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
+                    <td className="px-6 py-3.5">
+                      <span
+                        className={`font-semibold ${getCategoryColor(
+                          expense.category
+                        )}`}
+                      >
                         {expense.category}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-slate-500">
-                      {formatDateDisplay(expense)}
+                    <td className="px-6 py-3.5">
+                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-medium border border-emerald-200/50">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                        cleared
+                      </span>
                     </td>
-                    <td className="px-6 py-4 font-bold text-slate-900">
-                      -${Number(expense.amount).toFixed(2)}
+                    <td className="px-6 py-3.5 text-right font-bold font-mono text-slate-900 whitespace-nowrap">
+                      ${Number(expense.amount).toFixed(2)}
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-6 py-3.5 text-right whitespace-nowrap">
                       <button
                         onClick={() => handleDelete(expense.id)}
-                        className="text-xs font-medium text-red-500 hover:text-red-700"
+                        className="text-[11px] font-medium text-rose-500 hover:text-rose-700 hover:underline cursor-pointer"
                       >
                         Delete
                       </button>
@@ -318,6 +380,19 @@ export default function Expenses() {
                   </tr>
                 ))}
               </tbody>
+              <tfoot className="bg-slate-50/50 border-t border-slate-200/80 text-xs font-semibold text-slate-500">
+                <tr>
+                  <td colSpan={3} className="px-6 py-3 text-slate-400">
+                    {filteredExpenses.length} rows
+                  </td>
+                  <td colSpan={3} className="px-6 py-3 text-right">
+                    <span>Total: </span>
+                    <span className="font-bold font-mono text-slate-900 ml-1">
+                      ${totalAmount.toFixed(2)}
+                    </span>
+                  </td>
+                </tr>
+              </tfoot>
             </table>
           </div>
         )}
