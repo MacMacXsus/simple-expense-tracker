@@ -157,7 +157,9 @@ export default function Dashboard() {
     0
   );
   const transactionCount = filteredExpenses.length;
-  const recentExpenses = filteredExpenses.slice(0, 5);
+  
+  // Show up to 15 recent expenses so vertical scrolling can trigger
+  const recentExpenses = filteredExpenses.slice(0, 15);
 
   // Strictly Current-Month Budget Calculations
   const remainingBudget = monthlyBudget - currentMonthSpent;
@@ -245,7 +247,7 @@ export default function Dashboard() {
                     setTempBudget(monthlyBudget.toString());
                     setIsEditingBudget(!isEditingBudget);
                   }}
-                  className="text-xs text-[#1B5E20] hover:underline font-bold"
+                  className="text-xs text-[#1B5E20] hover:underline font-bold cursor-pointer"
                 >
                   {isEditingBudget ? "Cancel" : "Edit"}
                 </button>
@@ -262,7 +264,7 @@ export default function Dashboard() {
                     />
                     <button
                       onClick={handleSaveBudget}
-                      className="rounded-lg bg-[#1B5E20] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#144718]"
+                      className="rounded-lg bg-[#1B5E20] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#144718] cursor-pointer"
                     >
                       Save
                     </button>
@@ -509,7 +511,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Category Breakdown (Matches Right Side Card from Screenshot) */}
+            {/* Category Breakdown */}
             <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-6 flex flex-col justify-between">
               <div>
                 <h3 className="text-sm font-bold text-slate-900">By category</h3>
@@ -566,8 +568,8 @@ export default function Dashboard() {
           </div>
 
           {/* ================= 4. RECENT TRANSACTIONS TABLE ================= */}
-          <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+          <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between shrink-0">
               <div>
                 <h3 className="text-sm font-bold text-slate-900">
                   Recent transactions
@@ -589,7 +591,8 @@ export default function Dashboard() {
                 No transactions found for this view.
               </div>
             ) : (
-              <div className="divide-y divide-slate-100">
+              /* Vertically Scrollable List Container */
+              <div className="divide-y divide-slate-100 max-h-[280px] overflow-y-auto">
                 {recentExpenses.map((item) => (
                   <div
                     key={item.id}

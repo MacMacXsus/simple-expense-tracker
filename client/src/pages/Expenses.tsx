@@ -727,16 +727,16 @@ export default function Expenses() {
               : `No expenses found matching your filters.`}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-600">
-              <thead className="bg-slate-50/50 text-[11px] font-semibold text-slate-500 border-b border-slate-200/80">
+          <div className="overflow-auto max-h-[500px]">
+            <table className="w-full text-left text-xs text-slate-600 border-collapse">
+              <thead className="bg-slate-50 text-[11px] font-semibold text-slate-500 border-b border-slate-200/80 sticky top-0 z-10 shadow-sm">
                 <tr>
-                  <th className="px-6 py-3 font-medium">Date</th>
-                  <th className="px-6 py-3 font-medium">Description</th>
-                  <th className="px-6 py-3 font-medium">Category</th>
-                  <th className="px-6 py-3 font-medium">Status</th>
-                  <th className="px-6 py-3 font-medium text-right">Amount</th>
-                  <th className="px-6 py-3 font-medium text-right">Action</th>
+                  <th className="px-6 py-3 font-medium bg-slate-50">Date</th>
+                  <th className="px-6 py-3 font-medium bg-slate-50">Description</th>
+                  <th className="px-6 py-3 font-medium bg-slate-50">Category</th>
+                  <th className="px-6 py-3 font-medium bg-slate-50">Status</th>
+                  <th className="px-6 py-3 font-medium text-right bg-slate-50">Amount</th>
+                  <th className="px-6 py-3 font-medium text-right bg-slate-50">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -828,12 +828,12 @@ export default function Expenses() {
                   </tr>
                 ))}
               </tbody>
-              <tfoot className="bg-slate-50/50 border-t border-slate-200/80 text-xs font-semibold text-slate-500">
+              <tfoot className="bg-slate-50 border-t border-slate-200/80 text-xs font-semibold text-slate-500 sticky bottom-0 z-10 shadow-sm">
                 <tr>
-                  <td colSpan={3} className="px-6 py-3 text-slate-400">
+                  <td colSpan={3} className="px-6 py-3 text-slate-400 bg-slate-50">
                     {filteredExpenses.length} rows
                   </td>
-                  <td colSpan={3} className="px-6 py-3 text-right">
+                  <td colSpan={3} className="px-6 py-3 text-right bg-slate-50">
                     <span>Total: </span>
                     <span className="font-bold font-mono text-slate-900 ml-1">
                       ${totalAmount.toFixed(2)}
