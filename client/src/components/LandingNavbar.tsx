@@ -1,7 +1,23 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 export default function LandingNavbar() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleNavClick = (id: string) => {
+    if (location.pathname === "/") {
+      // Already on the home/landing page -> smooth scroll directly
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
+    } else {
+      // On another page (e.g. /privacy-policy) -> redirect home & pass section ID
+      navigate("/", { state: { scrollTo: id } });
+    }
+  };
+
   return (
     <header className="absolute top-0 left-0 right-0 z-20 w-full bg-transparent">
       <div className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
@@ -18,15 +34,24 @@ export default function LandingNavbar() {
 
         {/* Navigation Links */}
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
-          <a href="#features" className="hover:text-white transition-colors">
+          <button
+            onClick={() => handleNavClick("features")}
+            className="hover:text-white transition-colors cursor-pointer bg-transparent border-0 p-0"
+          >
             Features
-          </a>
-          <a href="#pricing" className="hover:text-white transition-colors">
+          </button>
+          <button
+            onClick={() => handleNavClick("pricing")}
+            className="hover:text-white transition-colors cursor-pointer bg-transparent border-0 p-0"
+          >
             Pricing
-          </a>
-          <a href="#about" className="hover:text-white transition-colors">
+          </button>
+          <button
+            onClick={() => handleNavClick("about")}
+            className="hover:text-white transition-colors cursor-pointer bg-transparent border-0 p-0"
+          >
             About Us
-          </a>
+          </button>
         </nav>
 
         {/* Action Buttons */}
