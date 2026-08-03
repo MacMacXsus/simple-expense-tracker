@@ -111,13 +111,39 @@ export default function Dashboard() {
     }
   };
 
+  // 
+// 1. Live Date & Time State
+const [currentTime, setCurrentTime] = useState(new Date());
+
+useEffect(() => {
+  const timer = setInterval(() => {
+    setCurrentTime(new Date());
+  }, 1000);
+
+  return () => clearInterval(timer); // Cleanup on unmount
+}, []);
+
+// 2. Format Date and Time
+const formattedDate = currentTime.toLocaleDateString("en-US", {
+  weekday: "short",
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+});
+
+const formattedClock = currentTime.toLocaleTimeString("en-US", {
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+});
+
+
+
+  // 
+
   // Dates reference for current month logic
   const todayStr = formatYYYYMMDD(new Date());
   const currentMonthStr = todayStr.substring(0, 7); // YYYY-MM
-  const currentMonthName = new Date().toLocaleString("en-US", {
-    month: "long",
-    year: "numeric",
-  });
 
   // 1. Always compute current calendar month's total spending using `item.date` first
   const currentMonthSpent = expenses.reduce((sum, item) => {
@@ -157,7 +183,7 @@ export default function Dashboard() {
     0
   );
   const transactionCount = filteredExpenses.length;
-  
+
   // Show up to 15 recent expenses so vertical scrolling can trigger
   const recentExpenses = filteredExpenses.slice(0, 15);
 
@@ -193,15 +219,29 @@ export default function Dashboard() {
 
   return (
     <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 font-sans text-slate-800">
-      {/* Title Header */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-          {currentMonthName}
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-          Your financial summary for this month.
-        </p>
-      </div>
+{/* Title Header with Live Date & Time */}
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-100 pb-4">
+  <div>
+    <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+      Financial Overview
+    </h1>
+    <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+      Your personal financial summary at a glance.
+    </p>
+  </div>
+
+  {/* Live Date & Time Badge */}
+  <div className="flex items-center gap-2 bg-white px-3.5 py-2 rounded-xl border border-slate-200/80 shadow-sm w-fit">
+    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+    <span className="text-xs font-semibold text-slate-700">
+      {formattedDate}
+    </span>
+    <span className="text-slate-300">•</span>
+    <span className="text-xs font-mono font-bold text-[#1B5E20]">
+      {formattedClock}
+    </span>
+  </div>
+</div>
 
       {loading ? (
         <div className="p-12 bg-white rounded-2xl border border-slate-200/80 shadow-sm text-center text-slate-500 text-sm">
@@ -213,7 +253,83 @@ export default function Dashboard() {
         </div>
       ) : (
         <>
-          {/* ================= 1. STAT CARDS GRID ================= */}
+          {/* ================= 1. FILTER TOOLBAR (COMPACT ON DESKTOP) ================= */}
+          <div className="w-full sm:w-fit bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-start gap-4">
+            <div className="flex items-center gap-3 flex-wrap">
+              <label
+                htmlFor="filter-select"
+                className="text-xs font-bold text-slate-400 uppercase tracking-wider"
+              >
+                Filter View:
+              </label>
+              <select
+                id="filter-select"
+                value={filterMode}
+                onChange={(e) =>
+                  setFilterMode(
+                    e.target.value as
+                      | "today"
+                      | "this_month"
+                      | "all"
+                      | "custom"
+                      | "date_range"
+                  )
+                }
+                className="bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1B5E20] focus:border-transparent cursor-pointer"
+              >
+                <option value="this_month">This Month</option>
+                <option value="today">Today</option>
+                <option value="all">All Time</option>
+                <option value="custom">Specific Date</option>
+                <option value="date_range">Date Range</option>
+              </select>
+            </div>
+
+            {/* Custom Date Controls */}
+            {filterMode === "custom" && (
+              <div className="flex items-center gap-2 sm:pl-3 sm:border-l sm:border-slate-200">
+                <span className="text-xs font-medium text-slate-500">
+                  Select Date:
+                </span>
+                <input
+                  type="date"
+                  value={customDate}
+                  onChange={(e) => setCustomDate(e.target.value)}
+                  className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1B5E20]"
+                />
+              </div>
+            )}
+
+            {/* Date Range Controls (Aligned Inputs) */}
+            {filterMode === "date_range" && (
+              <div className="flex flex-col gap-2 sm:pl-3 sm:border-l sm:border-slate-200">
+                <div className="flex items-center gap-2">
+                  <span className="w-10 text-right text-xs font-medium text-slate-500">
+                    From:
+                  </span>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1B5E20]"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-10 text-right text-xs font-medium text-slate-500">
+                    To:
+                  </span>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1B5E20]"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ================= 2. STAT CARDS GRID ================= */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Stat Card 1: Total Spent */}
             <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
@@ -228,11 +344,13 @@ export default function Dashboard() {
                 <div className="flex items-center gap-1 text-[11px] font-medium text-[#1B5E20] mt-1">
                   <span>↗ Logged</span>
                   <span className="text-slate-400 truncate">
-                    ({filterMode === "today"
+                    (
+                    {filterMode === "today"
                       ? "Today"
                       : filterMode === "this_month"
                       ? "This Month"
-                      : "Filtered"})
+                      : "Filtered"}
+                    )
                   </span>
                 </div>
               </div>
@@ -337,110 +455,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* ================= 2. FILTER TOOLBAR ================= */}
-          <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-1">
-                Filter View:
-              </span>
-              <div className="flex flex-wrap gap-1 bg-slate-100/80 p-1 rounded-lg">
-                <button
-                  onClick={() => setFilterMode("today")}
-                  className={`px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
-                    filterMode === "today"
-                      ? "bg-white text-[#1B5E20] shadow-sm"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  Today
-                </button>
-                <button
-                  onClick={() => setFilterMode("this_month")}
-                  className={`px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
-                    filterMode === "this_month"
-                      ? "bg-white text-[#1B5E20] shadow-sm"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  This Month
-                </button>
-                <button
-                  onClick={() => setFilterMode("all")}
-                  className={`px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
-                    filterMode === "all"
-                      ? "bg-white text-[#1B5E20] shadow-sm"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  All Time
-                </button>
-                <button
-                  onClick={() => setFilterMode("custom")}
-                  className={`px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
-                    filterMode === "custom"
-                      ? "bg-white text-[#1B5E20] shadow-sm"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  Specific Date
-                </button>
-                <button
-                  onClick={() => setFilterMode("date_range")}
-                  className={`px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
-                    filterMode === "date_range"
-                      ? "bg-white text-[#1B5E20] shadow-sm"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  Date Range
-                </button>
-              </div>
-            </div>
-
-            {/* Custom Date Controls */}
-            {filterMode === "custom" && (
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-slate-500">
-                  Select Date:
-                </span>
-                <input
-                  type="date"
-                  value={customDate}
-                  onChange={(e) => setCustomDate(e.target.value)}
-                  className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1B5E20]"
-                />
-              </div>
-            )}
-
-            {/* Date Range Controls */}
-            {filterMode === "date_range" && (
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-medium text-slate-500">
-                    From:
-                  </span>
-                  <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1B5E20]"
-                  />
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-medium text-slate-500">
-                    To:
-                  </span>
-                  <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1B5E20]"
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
           {/* ================= 3. ANALYTICS & CATEGORY SECTION ================= */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Visual Progress Breakdown */}
@@ -516,7 +530,9 @@ export default function Dashboard() {
               <div>
                 <h3 className="text-sm font-bold text-slate-900">By category</h3>
                 <p className="text-xs text-slate-500 mt-0.5 mb-4">
-                  {filterMode === "this_month" ? "This month" : "Filtered breakdown"}
+                  {filterMode === "this_month"
+                    ? "This month"
+                    : "Filtered breakdown"}
                 </p>
 
                 {Object.keys(categoryTotals).length === 0 ? (
